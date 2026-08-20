@@ -92,7 +92,7 @@ flowchart TD
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/flashroute.git
+git clone https://github.com/shlsdhrth16dev/flashroute.git
 cd flashroute
 ```
 
