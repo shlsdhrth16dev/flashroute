@@ -10,34 +10,34 @@ FlashRoute is a distributed, high-throughput URL shortening and real-time click 
 
 ```mermaid
 flowchart TD
-    Client["Clients & Web Browsers"] --> Gateway["Fastify Gateway & Router"]
+    Client["Clients and Web Browsers"] --> Gateway["Fastify Gateway and Router"]
     
     subgraph RateLimiting ["Rate Limiting Layer"]
-        Gateway --> TokenBucket["Atomic Token Bucket (Burst: 30-200, Smooth Monotonic Refill)"]
+        Gateway --> TokenBucket["Atomic Token Bucket Rate Limiter"]
     end
     
-    subgraph ReadPath ["Ultra-Fast Redirection Path (GET /:code)"]
+    subgraph ReadPath ["Ultra-Fast Redirection Path GET /:code"]
         Gateway --> Bloom["Bloom Filter (O(1) CPU Negative Check)"]
-        Bloom -->|Pass| L1["L1 In-Memory LRU Cache (< 0.05ms)"]
+        Bloom -->|Pass| L1["L1 In-Memory LRU Cache (Sub-Millisecond)"]
         L1 -->|Cache Miss| Singleflight["Singleflight Request Coalescer"]
-        Singleflight --> L2["L2 Distributed Store (Redis / Cluster Simulator)"]
+        Singleflight --> L2["L2 Distributed Store (Redis or In-Memory)"]
         L2 -->|Cache Miss| Storage["WAL-Backed Persistent Storage Engine"]
         L1 -->|Cache Hit| FastRedirect["302 Found Fast Redirect"]
         L2 -->|Cache Hit| FastRedirect
         Storage -->|Warm Caches| FastRedirect
     end
     
-    subgraph WritePath ["Link Creation Path (POST /api/urls)"]
+    subgraph WritePath ["Link Creation Path POST /api/urls"]
         Gateway --> Snowflake["Distributed 64-Bit Snowflake ID Generator"]
         Snowflake --> Base62["Base62 Alphanumeric Encoder"]
-        Base62 --> DBInsert["Atomic WAL Append + Warm Caches & Bloom Filter"]
+        Base62 --> DBInsert["Atomic WAL Append + Warm Caches and Bloom Filter"]
     end
     
     subgraph AnalyticsEngine ["Asynchronous Micro-Batch Analytics Ingestion"]
-        FastRedirect -.->|Non-Blocking Emit (< 0.02ms)| RingBuffer["In-Memory Analytics Ring Buffer"]
-        RingBuffer --> BatchWorker["Background Micro-Batch Worker (500ms or 1,000 items)"]
+        FastRedirect -.->|Non-Blocking Emit| RingBuffer["In-Memory Analytics Ring Buffer"]
+        RingBuffer --> BatchWorker["Background Micro-Batch Worker (500ms or 1k items)"]
         BatchWorker --> AnalyticsDB["Click Analytics Logs (Indexed)"]
-        BatchWorker -.->|Real-Time Broadcast| SSEBroker["Server-Sent Events (SSE) Broker"]
+        BatchWorker -.->|Real-Time Broadcast| SSEBroker["Server-Sent Events Broker"]
         SSEBroker -.-> Dashboard["Live React Analytics Dashboard"]
     end
 ```
