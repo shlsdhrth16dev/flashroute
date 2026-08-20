@@ -1,0 +1,13 @@
+{
+  "name": "flashroute-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "benchmark": "npm --prefix backend run benchmark"
+  },
+  "keywords": ["systems-engineering", "distributed-systems", "url-shortener", "rate-limiter", "caching", "snowflake-id"],
+  "author": "Sahil",
+  "license": "MIT"
+}

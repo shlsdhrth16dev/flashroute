@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # FlashRoute Backend Service Node
+  flashroute-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flashroute-api
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - HOST=0.0.0.0
+      - REDIS_URL=redis://flashroute-redis:6379
+      - NODE_ENV=production
+    volumes:
+      - flashroute_data:/app/data
+    depends_on:
+      - flashroute-redis
+    restart: unless-stopped
+
+  # Distributed Redis L2 Cache Node
+  flashroute-redis:
+    image: redis:7-alpine
+    container_name: flashroute-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  flashroute_data:
+  redis_data:
